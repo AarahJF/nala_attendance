@@ -9,8 +9,6 @@ import 'package:intl/intl.dart';
 import 'package:simple_barcode_scanner/simple_barcode_scanner.dart';
 
 class HomeScreen extends StatefulWidget {
-
-
   const HomeScreen({Key? key}) : super(key: key);
 
   @override
@@ -43,36 +41,38 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
+  void _saveAttendanceToFirestore(String id, String inTime, String outTime) {
+    print("came here");
 
-
-  void _saveAttendanceToFirestore(String id,String inTime, String outTime ) {
-
-      print("came here");
-
-    final CollectionReference studentsRef = Firestore.instance.collection("Students").document(id).collection("Attendance");
+    final CollectionReference studentsRef = Firestore.instance
+        .collection("Students")
+        .document(id)
+        .collection("Attendance");
 
     studentsRef.add({
       'dTimeIn': inTime,
       'dTimeOut': outTime,
-
     }).then((value) {
       print('Enrollment saved to Firestore');
     }).catchError((error) {
       print('Failed to save guardian: $error');
     });
-
   }
 
   Future<void> restoreDataFromCsv() async {
     final csvData = await CsvHelper.readCsv('data.csv');
     for (final row in csvData) {
-      final DateTime storedTime = DateTime.parse(row[4]); // Parse the stored time from the CSV
+      final DateTime storedTime =
+          DateTime.parse(row[4]); // Parse the stored time from the CSV
       final DateTime currentTime = DateTime.now(); // Get the current time
 
-      final Duration difference = currentTime.difference(storedTime); // Calculate time difference
-      final int timeDifferenceInMinutes = difference.inMinutes; // Convert difference to minutes
+      final Duration difference =
+          currentTime.difference(storedTime); // Calculate time difference
+      final int timeDifferenceInMinutes =
+          difference.inMinutes; // Convert difference to minutes
 
-      final int adjustedTimeRemaining = row[1] - timeDifferenceInMinutes; // Adjusted timeRemaining
+      final int adjustedTimeRemaining =
+          row[1] - timeDifferenceInMinutes; // Adjusted timeRemaining
 
       final student = DisplayStudent(
         firstname: row[0],
@@ -121,37 +121,29 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> removeStudentFromCsv(String name, String subject) async {
     // Remove student from mathStudents or readStudents list based on the subject
 
-    if(subject == 'Math'){
-
+    if (subject == 'Math') {
       mathStudents = List.from(mathStudents); // Create a copy of the list
 
-      for(final student in mathStudents){
-
-           if(student.firstname == name){
-             mathStudents.remove(student);
-             updateCounts(student.countdownBar.status, student.subject, decrement: true);
-             break;
-           }
-
-      }
-
-    }
-    if(subject == 'Read'){
-
-      readStudents = List.from(readStudents); // Create a copy of the list
-      for(final student in readStudents){
-
-        if(student.firstname == name){
-          readStudents.remove(student);
-          updateCounts(student.countdownBar.status, student.subject, decrement: true);
+      for (final student in mathStudents) {
+        if (student.firstname == name) {
+          mathStudents.remove(student);
+          updateCounts(student.countdownBar.status, student.subject,
+              decrement: true);
           break;
         }
-
       }
-
     }
-
-
+    if (subject == 'Read') {
+      readStudents = List.from(readStudents); // Create a copy of the list
+      for (final student in readStudents) {
+        if (student.firstname == name) {
+          readStudents.remove(student);
+          updateCounts(student.countdownBar.status, student.subject,
+              decrement: true);
+          break;
+        }
+      }
+    }
 
     // Create a StudentRecord object to store the removed student's information
     final studentRecord = StudentRecord(
@@ -161,7 +153,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
 
     // Save the student record to student_record.csv
-    await saveDataToCsv(filename:'student_record.csv');
+    await saveDataToCsv(filename: 'student_record.csv');
 
     // Save the updated mathStudents and readStudents lists to data.csv
     await saveDataToCsv();
@@ -187,7 +179,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
     await CsvHelper.writeCsv(csvData, filename);
   }
-
 
   // Future<void> saveDataToCsv({filename = 'data.csv'}) async {
   //   final List<List<dynamic>> csvData = [];
@@ -243,11 +234,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     if (res is String) {
                       result = res;
                       if (studentNames.document(result) != null) {
-                        studentNames.document(result).get().then((recordlist) async {
+                        studentNames
+                            .document(result)
+                            .get()
+                            .then((recordlist) async {
                           if (recordlist['isMath']) {
-                            final int timeRemaining = await getTimeRemianing(result);
+                            final int timeRemaining =
+                                await getTimeRemianing(result);
                             final student = DisplayStudent(
-
                               firstname: recordlist['FirstName'],
                               timeRemaining: timeRemaining,
                               status: 'Green',
@@ -256,27 +250,31 @@ class _HomeScreenState extends State<HomeScreen> {
                               mathStudents: mathStudents,
                               readStudents: readStudents,
                               totalTime: timeRemaining,
-
                             );
 
                             setState(() {
                               mathStudents.add(student);
                               greenCountM++;
                               DateTime _time = DateTime.now();
-                              String currentTime = DateFormat("yyyy/MM/dd HH:mm:ss").format(_time);
-                              DateTime endTime = _time.add(new Duration(hours: 2));
-                              String endTimeFormatted = DateFormat("yyyy/MM/dd HH:mm:ss").format(endTime);
-                              _saveAttendanceToFirestore(result, currentTime, endTimeFormatted);
-
+                              String currentTime =
+                                  DateFormat("yyyy/MM/dd HH:mm:ss")
+                                      .format(_time);
+                              DateTime endTime =
+                                  _time.add(new Duration(hours: 2));
+                              String endTimeFormatted =
+                                  DateFormat("yyyy/MM/dd HH:mm:ss")
+                                      .format(endTime);
+                              _saveAttendanceToFirestore(
+                                  result, currentTime, endTimeFormatted);
                             });
                           }
 
                           if (recordlist['isReading']) {
-
-                            final int timeRemaining = await getTimeRemianing(result);
+                            final int timeRemaining =
+                                await getTimeRemianing(result);
                             final student = DisplayStudent(
                               firstname: recordlist['FirstName'],
-                              timeRemaining: timeRemaining ,
+                              timeRemaining: timeRemaining,
                               status: 'Green',
                               subject: 'Read',
                               updateCount: updateCounts,
@@ -289,10 +287,16 @@ class _HomeScreenState extends State<HomeScreen> {
                               readStudents.add(student);
                               greenCountR++;
                               DateTime _time = DateTime.now();
-                              String currentTime = DateFormat("yyyy/MM/dd HH:mm:ss").format(_time);
-                              DateTime endTime = _time.add(new Duration(hours: 2));
-                              String endTimeFormatted = DateFormat("yyyy/MM/dd HH:mm:ss").format(endTime);
-                              _saveAttendanceToFirestore(result, currentTime, endTimeFormatted);
+                              String currentTime =
+                                  DateFormat("yyyy/MM/dd HH:mm:ss")
+                                      .format(_time);
+                              DateTime endTime =
+                                  _time.add(new Duration(hours: 2));
+                              String endTimeFormatted =
+                                  DateFormat("yyyy/MM/dd HH:mm:ss")
+                                      .format(endTime);
+                              _saveAttendanceToFirestore(
+                                  result, currentTime, endTimeFormatted);
                             });
                           }
                         }).catchError((e) {
@@ -348,13 +352,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                           TextButton(
                                             child: Text('Remove'),
                                             onPressed: () {
-
                                               setState(() {
-                                                removeStudentFromCsv(mathStudents[index].firstname,mathStudents[index].subject);
+                                                removeStudentFromCsv(
+                                                    mathStudents[index]
+                                                        .firstname,
+                                                    mathStudents[index]
+                                                        .subject);
                                                 Navigator.of(context).pop();
                                               });
-
-
                                             },
                                           ),
                                         ],
@@ -419,10 +424,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                             child: Text('Remove'),
                                             onPressed: () {
                                               setState(() {
-                                                removeStudentFromCsv(readStudents[index].firstname,readStudents[index].subject);
+                                                removeStudentFromCsv(
+                                                    readStudents[index]
+                                                        .firstname,
+                                                    readStudents[index]
+                                                        .subject);
                                                 Navigator.of(context).pop();
                                               });
-
                                             },
                                           ),
                                         ],
@@ -483,9 +491,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<int> getTimeRemianing(String id) async {
-
     final firestore = Firestore.instance;
-    final regularDetailsCollection = firestore.collection('Students').document(id).collection("Regular Schedule");
+    final regularDetailsCollection = firestore
+        .collection('Students')
+        .document(id)
+        .collection("Regular Schedule");
     int time;
     print("came here");
 
@@ -494,24 +504,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
       print(studentlist);
       for (final data in studentlist) {
-
-
-
-          time = int.parse(data['duration']) ;
-          print(time);
-          return time;
-
-
+        time = int.parse(data['duration']);
+        print(time);
+        return time;
       }
-
     } catch (e) {
       print(e.toString());
     }
 
     return 45;
-
   }
-
 
 // void updateCounts(String status, String subject) {
   //   setState(() {
@@ -548,7 +550,6 @@ class DisplayStudent {
   List<DisplayStudent> mathStudents;
   List<DisplayStudent> readStudents;
 
-
   DisplayStudent({
     required this.firstname,
     required int timeRemaining,
@@ -558,19 +559,16 @@ class DisplayStudent {
     required this.mathStudents,
     required this.readStudents,
     required int totalTime,
-
   }) : countdownBar = CountdownBar(
-    timeRemaining: timeRemaining,
-    status: status,
-    updateCount: updateCount,
-    subject: subject,
-    name: firstname,
-    mathStudents: [],
-    readStudents: [],
-    totalTime: totalTime,
-  );
-
-
+          timeRemaining: timeRemaining,
+          status: status,
+          updateCount: updateCount,
+          subject: subject,
+          name: firstname,
+          mathStudents: [],
+          readStudents: [],
+          totalTime: totalTime,
+        );
 }
 
 class CountdownBar extends StatefulWidget {
@@ -584,7 +582,6 @@ class CountdownBar extends StatefulWidget {
   late List<DisplayStudent> readStudents;
   final void Function(String, String) updateCount;
 
-
   CountdownBar({
     Key? key,
     required this.timeRemaining,
@@ -592,16 +589,15 @@ class CountdownBar extends StatefulWidget {
     required this.updateCount,
     required this.subject,
     required this.totalTime,
-    required this.name, required this.mathStudents, required this.readStudents,
+    required this.name,
+    required this.mathStudents,
+    required this.readStudents,
   }) : super(key: key) {
     secondsRemaining = timeRemaining;
   }
 
-
   @override
   State<CountdownBar> createState() => _CountdownBarState();
-
-
 }
 
 class _CountdownBarState extends State<CountdownBar> {
@@ -609,8 +605,6 @@ class _CountdownBarState extends State<CountdownBar> {
 
   late String statusColor;
   Color barColor = Colors.green;
-
-
 
   @override
   void initState() {
@@ -625,53 +619,54 @@ class _CountdownBarState extends State<CountdownBar> {
   void startTimer() {
     const oneMin = Duration(minutes: 1);
     timer = Timer.periodic(oneMin, (Timer timer) {
-
       setState(() {
-               if (widget.secondsRemaining > 0) {
-                 widget.secondsRemaining--;
+        if (widget.secondsRemaining > 0) {
+          widget.secondsRemaining--;
 
-                if (widget.secondsRemaining <= 30 && widget.secondsRemaining > 15) {
-                  if (statusColor != 'Yellow') {
-                    widget.updateCount('Yellow', widget.subject);
-                    statusColor = 'Yellow';
-                  }
-                  barColor = Colors.yellow;
-                } else if (widget.secondsRemaining <= 15 && widget.secondsRemaining > 0) {
-                  if (statusColor != 'Red') {
-                    widget.updateCount('Red', widget.subject);
-                    statusColor = 'Red';
-                  }
-                  barColor = Colors.red;
-                }
-                progress = widget.secondsRemaining / widget.totalTime;
-              } else {
-                timer.cancel();
-              }
+          if (widget.secondsRemaining <= 30 && widget.secondsRemaining > 15) {
+            if (statusColor != 'Yellow') {
+              widget.updateCount('Yellow', widget.subject);
+              statusColor = 'Yellow';
+            }
+            barColor = Colors.yellow;
+          } else if (widget.secondsRemaining <= 15 &&
+              widget.secondsRemaining > 0) {
+            if (statusColor != 'Red') {
+              widget.updateCount('Red', widget.subject);
+              statusColor = 'Red';
+            }
+            barColor = Colors.red;
+          }
+          progress = widget.secondsRemaining / widget.totalTime;
+        } else {
+          timer.cancel();
+        }
       });
     });
   }
 
-
   void deleteStudent() {
     setState(() {
       if (widget.subject == 'Math') {
-
-        widget.mathStudents.removeWhere((student) => student.firstname == widget.name);
-
+        widget.mathStudents
+            .removeWhere((student) => student.firstname == widget.name);
 
         //updateCounts(widget.status, widget.subject);
       } else if (widget.subject == 'Read') {
-
-        widget.readStudents.removeWhere((student) => student.firstname == widget.name);
+        widget.readStudents
+            .removeWhere((student) => student.firstname == widget.name);
         //updateCounts(widget.status, widget.subject);
-
       }
     });
   }
 
   void saveRecordToCsv(StudentRecord studentRecord) async {
     final csvData = [
-      [studentRecord.firstname, studentRecord.subject, studentRecord.scanDateTime.toString()]
+      [
+        studentRecord.firstname,
+        studentRecord.subject,
+        studentRecord.scanDateTime.toString()
+      ]
     ];
     await CsvHelper.writeCsv(csvData, 'student_records.csv');
   }
@@ -703,10 +698,6 @@ class _CountdownBarState extends State<CountdownBar> {
       ],
     );
   }
-
-
-
-
 }
 
 class ColorBox extends StatelessWidget {
@@ -736,7 +727,6 @@ class ColorBox extends StatelessWidget {
 }
 
 class CsvHelper {
-
   static Future<List<List<dynamic>>> readCsv(String s) async {
     final file = File(s);
     if (await file.exists()) {
@@ -752,7 +742,6 @@ class CsvHelper {
     await file.writeAsString(csvContent);
   }
 }
-
 
 class StudentRecord {
   String firstname;

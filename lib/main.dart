@@ -1,6 +1,10 @@
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:firedart/firedart.dart';
-import 'package:flutter/foundation.dart' show TargetPlatform, debugDefaultTargetPlatformOverride, defaultTargetPlatform;
+import 'package:flutter/foundation.dart'
+    show
+        TargetPlatform,
+        debugDefaultTargetPlatformOverride,
+        defaultTargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:collection/collection.dart';
@@ -51,7 +55,6 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   int myIndex = 0;
 
-
   GlobalKey _bottomNavigationKey = GlobalKey();
 
   Widget bodyFunction() {
@@ -70,7 +73,9 @@ class _MyAppState extends State<MyApp> {
         );
       case 3:
         return Container(
-          child: QRCodeGenerator(title: 'Generate QR Code',),
+          child: QRCodeGenerator(
+            title: 'Generate QR Code',
+          ),
         );
         break;
       default:
