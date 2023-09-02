@@ -3,13 +3,12 @@ import 'package:file_picker/file_picker.dart';
 import 'package:firedart/firedart.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-//import 'package:flutter_datetime_picker/flutter_datetime_picker.dart' as dt;
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart' as dt;
 import 'package:intl/intl.dart';
 import 'package:qr_image_generator/qr_image_generator.dart';
-
+import 'package:toasty_snackbar/toasty_snackbar.dart';
 
 import 'guardian.dart';
-
 
 class AddStudentPage extends StatefulWidget {
   @override
@@ -31,10 +30,7 @@ class _AddStudentPageState extends State<AddStudentPage> {
   bool studCMSIDValue = false;
   bool studTCAIDValue = false;
 
-
   List<Guardian> guardianDetails = [];
-
-
 
   bool momFirstNameValue = false;
   bool momLastNameValue = false;
@@ -46,7 +42,7 @@ class _AddStudentPageState extends State<AddStudentPage> {
   bool dadPhoneValue = false;
   String? readingValue; // Updated to null
   String? mathValue; // Updated to null
-  String _data='';
+  String _data = '';
 
   void _generateQRCode() {
     final text = _studCMSIDController.text;
@@ -98,16 +94,20 @@ class _AddStudentPageState extends State<AddStudentPage> {
     return result != null ? Directory(result) : null;
   }
 
-
   void _addGuardian() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        final TextEditingController _relationController = TextEditingController();
-        final TextEditingController _guardianFirstNameController = TextEditingController();
-        final TextEditingController _guardianLastNameController = TextEditingController();
-        final TextEditingController _guardianEmailController = TextEditingController();
-        final TextEditingController _guardianPhoneController = TextEditingController();
+        final TextEditingController _relationController =
+            TextEditingController();
+        final TextEditingController _guardianFirstNameController =
+            TextEditingController();
+        final TextEditingController _guardianLastNameController =
+            TextEditingController();
+        final TextEditingController _guardianEmailController =
+            TextEditingController();
+        final TextEditingController _guardianPhoneController =
+            TextEditingController();
 
         return AlertDialog(
           title: Text('Add Guardian Detail'),
@@ -167,7 +167,6 @@ class _AddStudentPageState extends State<AddStudentPage> {
               ],
             ),
           ),
-
           actions: [
             ElevatedButton(
               onPressed: () {
@@ -248,14 +247,12 @@ class _AddStudentPageState extends State<AddStudentPage> {
   //   }
   // }
 
-
-
   void _saveGuardiansToFirestore() {
-
-
     final firestore = Firestore.instance;
-    final guardianDetailsCollection = firestore.collection('Students').document(_studCMSIDController.text).collection("Guardian");
-
+    final guardianDetailsCollection = firestore
+        .collection('Students')
+        .document(_studCMSIDController.text)
+        .collection("Guardian");
 
     for (var guardian in guardianDetails) {
       guardianDetailsCollection.add({
@@ -296,21 +293,21 @@ class _AddStudentPageState extends State<AddStudentPage> {
   // }
 
   void _saveEnrollmentToFirestore() {
-
-
     final firestore = Firestore.instance;
-    final enrollmentDetailsCollection = firestore.collection('Students').document(_studCMSIDController.text).collection("Enrollments");
+    final enrollmentDetailsCollection = firestore
+        .collection('Students')
+        .document(_studCMSIDController.text)
+        .collection("Enrollments");
 
     enrollmentDetailsCollection.add({
-        'StartDate': _dateController.text,
-        'Class': _isReading ? "Reading" : (_isMath ? "Math" : "Other"),
-        'EndDate': "",
-      }).then((value) {
-        print('Enrollment saved to Firestore');
-      }).catchError((error) {
-        print('Failed to save guardian: $error');
-      });
-
+      'StartDate': _dateController.text,
+      'Class': _isReading ? "Reading" : (_isMath ? "Math" : "Other"),
+      'EndDate': "",
+    }).then((value) {
+      print('Enrollment saved to Firestore');
+    }).catchError((error) {
+      print('Failed to save guardian: $error');
+    });
   }
 
   // void _saveEnrollmentToFirestore() {
@@ -339,8 +336,8 @@ class _AddStudentPageState extends State<AddStudentPage> {
       _studCMSIDController.clear();
       _studTCAIDController.clear();
       _dateController.clear();
-      readingValue=null;
-      mathValue=null;
+      readingValue = null;
+      mathValue = null;
       _isActive = false;
       _isReading = false;
       _isMath = false;
@@ -348,9 +345,7 @@ class _AddStudentPageState extends State<AddStudentPage> {
       lastNameValue = false;
       studCMSIDValue = false;
       studTCAIDValue = false;
-      guardianDetails=[];
-
-
+      guardianDetails = [];
     });
   }
 
@@ -359,19 +354,19 @@ class _AddStudentPageState extends State<AddStudentPage> {
       try {
         _formKey.currentState!.save();
 
-        if(readingValue==null){
-          readingValue='';
+        if (readingValue == null) {
+          readingValue = '';
         }
-        if(mathValue==null){
-          mathValue='';
+        if (mathValue == null) {
+          mathValue = '';
         }
-
 
         final firestore = Firestore.instance;
         final studentsCollection = firestore.collection('Students');
         final cmsStudentId = _studCMSIDController.text;
 
-        final personalDetailsCollection = studentsCollection.document(cmsStudentId);
+        final personalDetailsCollection =
+            studentsCollection.document(cmsStudentId);
 
         await personalDetailsCollection.set({
           'FirstName': _firstNameController.text,
@@ -387,9 +382,6 @@ class _AddStudentPageState extends State<AddStudentPage> {
 
         _saveGuardiansToFirestore();
         _saveEnrollmentToFirestore();
-
-
-
 
         _resetFields();
       } catch (e) {
@@ -416,9 +408,9 @@ class _AddStudentPageState extends State<AddStudentPage> {
 
                 Text(
                   'Student Details',
-
                   style: TextStyle(
-                    fontWeight: FontWeight.bold,),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
 
                 SizedBox(height: 16.0),
@@ -431,19 +423,15 @@ class _AddStudentPageState extends State<AddStudentPage> {
                   validator: (value) {
                     if (value!.isEmpty) {
                       return 'Please enter a first name';
-                    }
-                    else {
-                      firstNameValue=true;
+                    } else {
+                      firstNameValue = true;
                     }
                   },
                   onSaved: (value) {
                     _firstNameController.text = value!;
                     setState(() {
-                      firstNameValue=true;
-
+                      firstNameValue = true;
                     });
-
-
                   },
                   //key: _firstNameFormKey,
                 ),
@@ -455,24 +443,18 @@ class _AddStudentPageState extends State<AddStudentPage> {
                   validator: (value) {
                     if (value!.isEmpty) {
                       return 'Please enter a last name';
-                    }else{
-
+                    } else {
                       // setState(() {
                       //   lastNameValue=true;
                       //
                       // });
-
-
                     }
-
                   },
                   onSaved: (value) {
                     _lastNameController.text = value!;
-                    lastNameValue=true;
-
+                    lastNameValue = true;
                   },
                   //key: _lastNameFormKey,
-
                 ),
                 TextFormField(
                   controller: _studCMSIDController,
@@ -484,27 +466,21 @@ class _AddStudentPageState extends State<AddStudentPage> {
                     int? id = int.tryParse(value!);
                     if (value!.isEmpty) {
                       return 'Please enter a CMS student ID';
-                    }
-                    else if (id == null) {
+                    } else if (id == null) {
                       return 'Please enter an integer value';
-                    }
-                    else{
+                    } else {
                       // setState(() {
                       //   studCMSIDValue = true;
                       //
                       // });
-
                     }
-
                   },
                   onSaved: (value) {
                     _studCMSIDController.text = value!.toString();
                     studCMSIDValue = true;
-
                   },
 
                   //key: _studentIDFormKey,
-
                 ),
 
                 TextFormField(
@@ -517,54 +493,49 @@ class _AddStudentPageState extends State<AddStudentPage> {
                     int? id = int.tryParse(value!);
                     if (value!.isEmpty) {
                       return 'Please enter a TCA student ID';
-                    }
-                    else if (id == null) {
+                    } else if (id == null) {
                       return 'Please enter an integer value';
-                    }
-                    else{
+                    } else {
                       // setState(() {
                       //   studTCAIDValue= true;
                       //
                       // });
-
                     }
-
                   },
                   onSaved: (value) {
                     _studTCAIDController.text = value!.toString();
                     studTCAIDValue = true;
-
                   },
 
                   //key: _studentIDFormKey,
-
                 ),
 
-              TextFormField(
-                controller: _dateController,
-                decoration: InputDecoration(
-                  labelText: 'Start Date',
+                TextFormField(
+                  controller: _dateController,
+                  decoration: InputDecoration(
+                    labelText: 'Start Date',
+                  ),
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return 'Please select a date';
+                    }
+                    return null;
+                  },
+                  onTap: () {
+                    dt.DatePicker.showDatePicker(
+                      context,
+                      showTitleActions: true,
+                      onConfirm: (date) {
+                        setState(() {
+                          _dateController.text =
+                              DateFormat('yyyy-MM-dd').format(date);
+                        });
+                      },
+                    );
+                  },
                 ),
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Please select a date';
-                  }
-                  return null;
-                },
-                onTap: () {
-                  // dt.DatePicker.showDatePicker(
-                  //   context,
-                  //   showTitleActions: true,
-                  //   onConfirm: (date) {
-                  //     setState(() {
-                  //       _dateController.text = DateFormat('yyyy-MM-dd').format(date);
-                  //     });
-                  //   },
-                  // );
-                },
-              ),
 
-              CheckboxListTile(
+                CheckboxListTile(
                   title: Text('Is Reading'),
                   value: _isReading,
                   onChanged: (value) {
@@ -574,22 +545,21 @@ class _AddStudentPageState extends State<AddStudentPage> {
                   },
                 ),
 
-                if(_isReading)
+                if (_isReading)
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Column(
-
                       children: [
                         Text(
                           'Location',
-
                           style: TextStyle(
-                            fontWeight: FontWeight.bold,),
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         Row(
                           children: [
-                            Text('Main Room',
-
+                            Text(
+                              'Main Room',
                             ),
                             SizedBox(
                               width: 50,
@@ -598,20 +568,17 @@ class _AddStudentPageState extends State<AddStudentPage> {
                               value: 'Main Room',
                               groupValue: readingValue,
                               onChanged: (value) {
-
                                 setState(() {
                                   readingValue = value!;
                                 });
-
                               },
                             ),
-
                           ],
                         ),
                         Row(
                           children: [
-                            Text('Early Learner',
-
+                            Text(
+                              'Early Learner',
                             ),
                             SizedBox(
                               width: 42,
@@ -620,20 +587,17 @@ class _AddStudentPageState extends State<AddStudentPage> {
                               value: 'Early Learner',
                               groupValue: readingValue,
                               onChanged: (value) {
-
                                 setState(() {
                                   readingValue = value!;
                                 });
-
                               },
                             ),
-
                           ],
                         ),
                         Row(
                           children: [
-                            Text('Primary Instruction',
-
+                            Text(
+                              'Primary Instruction',
                             ),
                             SizedBox(
                               width: 5,
@@ -642,18 +606,14 @@ class _AddStudentPageState extends State<AddStudentPage> {
                               value: 'Primary Instruction',
                               groupValue: readingValue,
                               onChanged: (value) {
-
                                 setState(() {
                                   readingValue = value!;
                                 });
-
                               },
                             ),
-
                           ],
                         ),
                       ],
-
                     ),
                   ),
                 CheckboxListTile(
@@ -666,21 +626,21 @@ class _AddStudentPageState extends State<AddStudentPage> {
                   },
                 ),
 
-                if(_isMath)
+                if (_isMath)
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Column(
                       children: [
                         Text(
                           'Location',
-
                           style: TextStyle(
-                            fontWeight: FontWeight.bold,),
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         Row(
                           children: [
-                            Text('Main Room',
-
+                            Text(
+                              'Main Room',
                             ),
                             SizedBox(
                               width: 50,
@@ -689,20 +649,17 @@ class _AddStudentPageState extends State<AddStudentPage> {
                               value: 'Main Room',
                               groupValue: mathValue,
                               onChanged: (value) {
-
                                 setState(() {
                                   mathValue = value!;
                                 });
-
                               },
                             ),
-
                           ],
                         ),
                         Row(
                           children: [
-                            Text('Early Learner',
-
+                            Text(
+                              'Early Learner',
                             ),
                             SizedBox(
                               width: 42,
@@ -711,20 +668,17 @@ class _AddStudentPageState extends State<AddStudentPage> {
                               value: 'Early Learner',
                               groupValue: mathValue,
                               onChanged: (value) {
-
                                 setState(() {
                                   mathValue = value!;
                                 });
-
                               },
                             ),
-
                           ],
                         ),
                         Row(
                           children: [
-                            Text('Primary Instruction',
-
+                            Text(
+                              'Primary Instruction',
                             ),
                             SizedBox(
                               width: 5,
@@ -736,20 +690,13 @@ class _AddStudentPageState extends State<AddStudentPage> {
                                 setState(() {
                                   mathValue = value!;
                                 });
-
                               },
                             ),
-
                           ],
                         ),
                       ],
-
                     ),
                   ),
-
-
-
-
 
                 CheckboxListTile(
                   title: Text('Is Active'),
@@ -764,9 +711,9 @@ class _AddStudentPageState extends State<AddStudentPage> {
 
                 Text(
                   'Guadian Details',
-
-                    style: TextStyle(
-                    fontWeight: FontWeight.bold,),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 SizedBox(height: 16.0),
                 ListView.builder(
@@ -775,8 +722,10 @@ class _AddStudentPageState extends State<AddStudentPage> {
                   itemBuilder: (BuildContext context, int index) {
                     final guardian = guardianDetails[index];
                     return ListTile(
-                      title: Text('${guardian.relation}: ${guardian.firstName} ${guardian.lastName}'),
-                      subtitle: Text('Email: ${guardian.email}, Phone: ${guardian.phone}'),
+                      title: Text(
+                          '${guardian.relation}: ${guardian.firstName} ${guardian.lastName}'),
+                      subtitle: Text(
+                          'Email: ${guardian.email}, Phone: ${guardian.phone}'),
                     );
                   },
                 ),
@@ -808,17 +757,9 @@ class _AddStudentPageState extends State<AddStudentPage> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     ElevatedButton(
-
-                      onPressed:
-                          () {
-
+                      onPressed: () {
                         _addStudent();
-
-
                       },
-
-
-
                       child: Text('Add'),
                     ),
                     ElevatedButton(
@@ -834,10 +775,11 @@ class _AddStudentPageState extends State<AddStudentPage> {
       ),
     );
   }
+
   Future saveQRImage() async {
     FocusScope.of(context).unfocus();
     String? filePath = await FilePicker.platform.saveFile(
-      fileName: _studCMSIDController.text+".png",
+      fileName: _studCMSIDController.text + ".png",
       type: FileType.image,
     );
     if (filePath == null) {
@@ -856,5 +798,4 @@ class _AddStudentPageState extends State<AddStudentPage> {
       errorCorrectionLevel: ErrorCorrectionLevel.medium,
     );
   }
-
 }

@@ -13,8 +13,5 @@ class Schedule {
     required this.endTime,
     required this.location,
     required this.timediff,
-
-
-
   });
 }

@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:collection/collection.dart';
 import 'package:nala_attendance/home_screen.dart';
 import 'package:nala_attendance/qr_gen.dart';
+import 'Schedule_Viewer.dart';
 import 'add_student.dart';
 import 'custom_app_bar.dart';
 import 'maintain_student_profiles.dart';
@@ -20,31 +21,7 @@ const projectId = 'nala-attendance';
 void main(List<String> args) {
   Firestore.initialize(projectId);
 
-  // Enable desktop platforms
-  WidgetsFlutterBinding.ensureInitialized();
-  if ([
-    TargetPlatform.windows,
-    TargetPlatform.linux,
-    TargetPlatform.macOS,
-  ].contains(defaultTargetPlatform)) {
-    debugDefaultTargetPlatformOverride = TargetPlatform.fuchsia;
-  }
-
-  // Set up the custom window title bar
-  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark.copyWith(
-    systemNavigationBarColor: Colors.grey[50],
-    statusBarColor: Colors.grey[50],
-    systemNavigationBarIconBrightness: Brightness.dark,
-    statusBarIconBrightness: Brightness.dark,
-    statusBarBrightness: Brightness.dark,
-  ));
-
-  if (args.firstOrNull == 'multi_window') {
-    // runApp(MaintainStudentProfile());
-  } else {
-    // Run the app
-    runApp(MyApp());
-  }
+  runApp(MyApp());
 }
 
 class MyApp extends StatefulWidget {
@@ -78,6 +55,11 @@ class _MyAppState extends State<MyApp> {
           ),
         );
         break;
+      case 4:
+        return Container(
+          child: ScheduleViewPage(),
+        );
+        break;
       default:
         return Container(color: Colors.white);
         break;
@@ -91,7 +73,7 @@ class _MyAppState extends State<MyApp> {
       title: 'TCA - The Center Administrator',
       theme: ThemeData.light(),
       home: Scaffold(
-        appBar: CustomAppBar(),
+        //appBar: CustomAppBar(),
         body: bodyFunction(),
         bottomNavigationBar: CurvedNavigationBar(
           key: _bottomNavigationKey,
@@ -102,6 +84,7 @@ class _MyAppState extends State<MyApp> {
             Icon(Icons.people, size: 30),
             Icon(Icons.add_card, size: 30),
             Icon(Icons.qr_code, size: 30),
+            Icon(Icons.schedule, size: 30),
           ],
           color: Colors.white,
           buttonBackgroundColor: Colors.white,

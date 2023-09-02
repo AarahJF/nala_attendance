@@ -9,8 +9,7 @@ class MaintainStudentProfile extends StatefulWidget {
   const MaintainStudentProfile({Key? key}) : super(key: key);
 
   @override
-  State<MaintainStudentProfile> createState() =>
-      _MaintainStudentProfileState();
+  State<MaintainStudentProfile> createState() => _MaintainStudentProfileState();
 }
 
 class _MaintainStudentProfileState extends State<MaintainStudentProfile> {
@@ -19,8 +18,18 @@ class _MaintainStudentProfileState extends State<MaintainStudentProfile> {
   bool showInactiveStudents = false;
   bool showActiveStudents = false;
 
-  final CollectionReference studentsRef = Firestore.instance.collection("Students");
+  final CollectionReference studentsRef =
+      Firestore.instance.collection("Students");
 
+  Future<void> deleteStudent(String id) async {
+    try {
+      await studentsRef.document(id).delete();
+      print('Student with ID ${id} deleted.');
+      getStudents(); // Refresh the student list after deletion
+    } catch (e) {
+      print('Error deleting student: $e');
+    }
+  }
 
   void getStudents() async {
     List<Student> studentList = [];
@@ -39,8 +48,6 @@ class _MaintainStudentProfileState extends State<MaintainStudentProfile> {
           mathLocation: data['mathLocation'],
           readingLocation: data['readingLocation'],
           TCAID: data['TCAStudentID'],
-
-
         );
 
         studentList.add(student);
@@ -49,17 +56,13 @@ class _MaintainStudentProfileState extends State<MaintainStudentProfile> {
       print(e.toString());
     }
 
-    if(mounted){
+    if (mounted) {
       setState(() {
-
         students = studentList;
-        modifiedStudents = List.from(studentList); // Initialize modified students with original data
-
+        modifiedStudents = List.from(
+            studentList); // Initialize modified students with original data
       });
-
     }
-
-
 
     // setState(() {
     //   students = studentList;
@@ -96,9 +99,11 @@ class _MaintainStudentProfileState extends State<MaintainStudentProfile> {
     if (showInactiveStudents && showActiveStudents) {
       filteredStudents = modifiedStudents;
     } else if (showInactiveStudents) {
-      filteredStudents = modifiedStudents.where((student) => !student.isActive).toList();
+      filteredStudents =
+          modifiedStudents.where((student) => !student.isActive).toList();
     } else if (showActiveStudents) {
-      filteredStudents = modifiedStudents.where((student) => student.isActive).toList();
+      filteredStudents =
+          modifiedStudents.where((student) => student.isActive).toList();
     } else {
       filteredStudents = modifiedStudents;
     }
@@ -114,7 +119,8 @@ class _MaintainStudentProfileState extends State<MaintainStudentProfile> {
               onPressed: () {
                 // Reset button functionality
                 setState(() {
-                  modifiedStudents = List.from(students); // Restore modified students from original data
+                  modifiedStudents = List.from(
+                      students); // Restore modified students from original data
                   getStudents();
                 });
               },
@@ -130,7 +136,6 @@ class _MaintainStudentProfileState extends State<MaintainStudentProfile> {
               child: Table(
                 children: [
                   TableRow(
-
                     decoration: BoxDecoration(
                       color: Colors.blue[300],
                     ),
@@ -171,6 +176,8 @@ class _MaintainStudentProfileState extends State<MaintainStudentProfile> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+                      Text('Delete',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ],
@@ -182,10 +189,14 @@ class _MaintainStudentProfileState extends State<MaintainStudentProfile> {
                 children: [
                   Table(
                     children: [
-                      for (var index = 0; index < filteredStudents.length; index++)
+                      for (var index = 0;
+                          index < filteredStudents.length;
+                          index++)
                         TableRow(
                           decoration: BoxDecoration(
-                            color: filteredStudents[index].isActive ? null : Colors.grey[300],
+                            color: filteredStudents[index].isActive
+                                ? null
+                                : Colors.grey[300],
                           ),
                           children: [
                             MouseRegion(
@@ -193,14 +204,14 @@ class _MaintainStudentProfileState extends State<MaintainStudentProfile> {
                               child: GestureDetector(
                                 onTap: () {
                                   showDialog(
+                                    useSafeArea: false,
                                     context: context,
                                     builder: (BuildContext context) {
                                       return SizedBox(
-                                        width: 5000,
-                                        height: 5000,
+                                        width: 7000,
+                                        height: 7000,
                                         child: StudentDetailsPopup(
                                           student: filteredStudents[index],
-
                                         ),
                                       );
                                     },
@@ -235,7 +246,8 @@ class _MaintainStudentProfileState extends State<MaintainStudentProfile> {
                                 value: filteredStudents[index].isReading,
                                 onChanged: (value) {
                                   setState(() {
-                                    filteredStudents[index].isReading = value ?? false;
+                                    filteredStudents[index].isReading =
+                                        value ?? false;
                                   });
                                 },
                               ),
@@ -246,7 +258,8 @@ class _MaintainStudentProfileState extends State<MaintainStudentProfile> {
                                 value: filteredStudents[index].isDoingMath,
                                 onChanged: (value) {
                                   setState(() {
-                                    filteredStudents[index].isDoingMath = value ?? false;
+                                    filteredStudents[index].isDoingMath =
+                                        value ?? false;
                                   });
                                 },
                               ),
@@ -258,6 +271,41 @@ class _MaintainStudentProfileState extends State<MaintainStudentProfile> {
                                 child: filteredStudents[index].isActive
                                     ? Icon(Icons.check, color: Colors.green)
                                     : Icon(Icons.close, color: Colors.red),
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      title: Text('Confirm Delete'),
+                                      content: Text(
+                                          'Are you sure you want to delete student with ID: ${filteredStudents[index].studentId}?'),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                          },
+                                          child: Text('Cancel'),
+                                        ),
+                                        TextButton(
+                                          onPressed: () async {
+                                            await deleteStudent(
+                                                filteredStudents[index]
+                                                    .studentId);
+                                            Navigator.pop(context);
+                                          },
+                                          child: Text('Delete'),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.only(right: 150),
+                                child: Icon(Icons.delete, color: Colors.red),
                               ),
                             ),
                           ],
@@ -324,14 +372,16 @@ class _MaintainStudentProfileState extends State<MaintainStudentProfile> {
 
   void saveChangesToDatabase(List<Student> students) async {
     try {
-      final List<Map<String, dynamic>> data = students.map((student) => {
-        'FirstName': student.firstName,
-        'LastName': student.lastName,
-        'StudentID': student.studentId,
-        'isReading': student.isReading,
-        'isMath': student.isDoingMath,
-        'isActive': student.isActive,
-      }).toList();
+      final List<Map<String, dynamic>> data = students
+          .map((student) => {
+                'FirstName': student.firstName,
+                'LastName': student.lastName,
+                'StudentID': student.studentId,
+                'isReading': student.isReading,
+                'isMath': student.isDoingMath,
+                'isActive': student.isActive,
+              })
+          .toList();
 
       await studentsRef.add(data as Map<String, dynamic>);
       print('Changes saved to Firestore database.');
@@ -340,11 +390,3 @@ class _MaintainStudentProfileState extends State<MaintainStudentProfile> {
     }
   }
 }
-
-
-
-
-
-
-
-

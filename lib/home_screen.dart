@@ -16,6 +16,9 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  String selectedDay = '';
+  String selectedWeek =
+      ''; // Global variable to store the selected week details
   String result = '';
   CollectionReference studentNames = Firestore.instance.collection('Students');
   int greenCountM = 0;
@@ -29,9 +32,29 @@ class _HomeScreenState extends State<HomeScreen> {
   List<DisplayStudent> readStudents = [];
   List<StudentRecord> studentRecords = [];
 
+  String _getCurrentDay() {
+    DateTime now = DateTime.now();
+    return DateFormat('EEEE')
+        .format(now); // Format the current date to get the day
+  }
+
+  String getFormattedCurrentWeek() {
+    DateTime now = DateTime.now();
+    DateTime monday = now.subtract(Duration(days: now.weekday - 1));
+    DateTime sunday = monday.add(Duration(days: 6));
+
+    String formattedMonday = DateFormat('yyyy / MM / dd').format(monday);
+    String formattedSunday = DateFormat('yyyy / MM / dd').format(sunday);
+
+    return "$formattedMonday - $formattedSunday";
+  }
+
   @override
   void initState() {
     super.initState();
+    // TODO: implement initState
+    selectedDay = _getCurrentDay();
+    selectedWeek = getFormattedCurrentWeek();
     restoreDataFromCsv();
   }
 
@@ -42,8 +65,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _saveAttendanceToFirestore(String id, String inTime, String outTime) {
-    print("came here");
-
     final CollectionReference studentsRef = Firestore.instance
         .collection("Students")
         .document(id)
@@ -52,6 +73,8 @@ class _HomeScreenState extends State<HomeScreen> {
     studentsRef.add({
       'dTimeIn': inTime,
       'dTimeOut': outTime,
+      'Week': selectedWeek,
+      'Day': selectedDay,
     }).then((value) {
       print('Enrollment saved to Firestore');
     }).catchError((error) {
@@ -94,29 +117,6 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     }
   }
-
-  // Future<void> restoreDataFromCsv() async {
-  //   final csvData = await CsvHelper.readCsv('data.csv');
-  //   for (final row in csvData) {
-  //     final student = DisplayStudent(
-  //       firstname: row[0],
-  //       timeRemaining: row[1],
-  //       status: row[2],
-  //       subject: row[3],
-  //       updateCount: updateCounts,
-  //       mathStudents: mathStudents,
-  //       readStudents: readStudents,
-  //     );
-  //     if (student.subject == 'Math') {
-  //       mathStudents.add(student);
-  //       updateCounts(student.countdownBar.status, student.subject);
-  //
-  //     } else if (student.subject == 'Read') {
-  //       readStudents.add(student);
-  //       updateCounts(student.countdownBar.status, student.subject);
-  //     }
-  //   }
-  // }
 
   Future<void> removeStudentFromCsv(String name, String subject) async {
     // Remove student from mathStudents or readStudents list based on the subject
@@ -179,19 +179,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
     await CsvHelper.writeCsv(csvData, filename);
   }
-
-  // Future<void> saveDataToCsv({filename = 'data.csv'}) async {
-  //   final List<List<dynamic>> csvData = [];
-  //   for (final student in mathStudents + readStudents) {
-  //     csvData.add([
-  //       student.firstname,
-  //       student.countdownBar.secondsRemaining,
-  //       student.countdownBar.status,
-  //       student.subject,
-  //     ]);
-  //   }
-  //   await CsvHelper.writeCsv(csvData,filename);
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -514,32 +501,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return 45;
   }
-
-// void updateCounts(String status, String subject) {
-  //   setState(() {
-  //     if (subject == 'Math') {
-  //       if (status == 'Green') {
-  //         greenCountM++;
-  //       } else if (status == 'Yellow') {
-  //         greenCountM--;
-  //         yellowCountM++;
-  //       } else if (status == 'Red') {
-  //         yellowCountM--;
-  //         redCountM++;
-  //       }
-  //     } else if (subject == 'Read') {
-  //       if (status == 'Green') {
-  //         greenCountR++;
-  //       } else if (status == 'Yellow') {
-  //         greenCountR--;
-  //         yellowCountR++;
-  //       } else if (status == 'Red') {
-  //         yellowCountR--;
-  //         redCountR++;
-  //       }
-  //     }
-  //   });
-  // }
 }
 
 class DisplayStudent {
