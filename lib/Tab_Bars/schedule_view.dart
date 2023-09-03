@@ -134,11 +134,12 @@ class _ScheduleViewState extends State<ScheduleView> {
         'week': selectedWeek,
         'name': widget.name,
         'subject': subject,
+        'endTime': endTime,
       }).then((value) {
-        // _showSuccessMessage();
+        _showSuccessMessage();
         print('Regular Schedule saved to Firestore');
       }).catchError((error) {
-        //_showFailMessage(error);
+        _showFailMessage(error);
         print('Failed to save regular schedule: $error');
       });
     }

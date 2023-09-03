@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:collection/collection.dart';
 import 'package:nala_attendance/home_screen.dart';
 import 'package:nala_attendance/qr_gen.dart';
+import 'Data_Structures/student_schedule.dart';
 import 'Schedule_Viewer.dart';
 import 'add_student.dart';
 import 'custom_app_bar.dart';
@@ -31,13 +32,49 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   int myIndex = 0;
+  List<StudSchedule> studSchedule = []; // List to store Regular Schedule
+
+  void getSchedule() async {
+    final firestore = Firestore.instance;
+    final studentCollection = firestore.collection('Schedule');
+
+    try {
+      final studentlist = await studentCollection.get();
+
+      studSchedule.clear(); // Clear the previous schedule data
+      for (final data in studentlist) {
+        final schedule = StudSchedule(
+            startTime: data['startTime'],
+            location: data['location'],
+            name: data['name'],
+            subject: data['subject'],
+            week: data['week'],
+            day: data['day']);
+        studSchedule.add(schedule);
+      }
+
+      print(studSchedule);
+    } catch (e) {
+      //print(e.toString());
+    }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+
+    getSchedule();
+    super.initState();
+  }
 
   GlobalKey _bottomNavigationKey = GlobalKey();
 
   Widget bodyFunction() {
     switch (myIndex) {
       case 0:
-        return HomeScreen();
+        return HomeScreen(
+          studSchedule: studSchedule,
+        );
         break;
       case 1:
         return Container(
@@ -57,7 +94,9 @@ class _MyAppState extends State<MyApp> {
         break;
       case 4:
         return Container(
-          child: ScheduleViewPage(),
+          child: ScheduleViewPage(
+            studSchedule: studSchedule,
+          ),
         );
         break;
       default:

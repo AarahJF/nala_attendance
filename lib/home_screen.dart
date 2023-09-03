@@ -8,8 +8,12 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:simple_barcode_scanner/simple_barcode_scanner.dart';
 
+import 'Data_Structures/student_schedule.dart';
+
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  final List<StudSchedule> studSchedule;
+
+  HomeScreen({required this.studSchedule});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();

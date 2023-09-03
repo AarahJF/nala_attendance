@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart' as dt;
 import 'package:intl/intl.dart';
 import 'package:qr_image_generator/qr_image_generator.dart';
-import 'package:toasty_snackbar/toasty_snackbar.dart';
 
 import 'guardian.dart';
 
@@ -199,54 +198,6 @@ class _AddStudentPageState extends State<AddStudentPage> {
     );
   }
 
-  // void _addStudent() async {
-  //   if (_formKey.currentState!.validate()) {
-  //     try {
-  //       _formKey.currentState!.save();
-  //
-  //       if(readingValue==null){
-  //         readingValue='';
-  //       }
-  //       if(mathValue==null){
-  //         mathValue='';
-  //       }
-  //
-  //
-  //
-  //       final firestore = Firestore.instance;
-  //       final studentsCollection = firestore.collection('Guadians');
-  //       final documentId = _studCMSIDController.text;
-  //
-  //       await studentsCollection.document(documentId).set({
-  //         'FirstName': _firstNameController.text,
-  //         'LastName': _lastNameController.text,
-  //         'CMSStudentID': _studCMSIDController.text,
-  //         'TCAStudentID': _studTCAIDController.text,
-  //         'momFirstName': _momFirstNameCon.text,
-  //         'momLastName': _momLastNameCon.text,
-  //         'momEmail': _momEmailCon.text,
-  //         'momPhone': _momPhoneNumCon.text,
-  //         'dadFirstName': _dadFirstNameCon.text,
-  //         'dadLastName': _dadLastNameCon.text,
-  //         'dadEmail': _dadEmailCon.text,
-  //         'dadPhone': _dadPhoneNumCon.text,
-  //         'isReading': _isReading,
-  //         'isMath': _isMath,
-  //         'readingLocation': readingValue,
-  //         'mathLocation': mathValue,
-  //         'isActive': _isActive,
-  //       });
-  //
-  //
-  //
-  //       //Fluttertoast.showToast(msg: 'Student added successfully!');
-  //       _resetFields();
-  //     } catch (e) {
-  //       print(e.toString());
-  //     }
-  //   }
-  // }
-
   void _saveGuardiansToFirestore() {
     final firestore = Firestore.instance;
     final guardianDetailsCollection = firestore
@@ -269,29 +220,6 @@ class _AddStudentPageState extends State<AddStudentPage> {
     }
   }
 
-  // void _saveGuardiansToFirestore() {
-  //
-  //
-  //   final firestore = Firestore.instance;
-  //   final guardianDetailsCollection = firestore.collection('Guardians');
-  //
-  //
-  //   for (var guardian in guardianDetails) {
-  //     guardianDetailsCollection.add({
-  //       'relationType': guardian.relation,
-  //       'firstName': guardian.firstName,
-  //       'lastName': guardian.lastName,
-  //       'email': guardian.email,
-  //       'phoneNumber': guardian.phone,
-  //       'CMSID': _studCMSIDController.text,
-  //     }).then((value) {
-  //       print('Guardian saved to Firestore');
-  //     }).catchError((error) {
-  //       print('Failed to save guardian: $error');
-  //     });
-  //   }
-  // }
-
   void _saveEnrollmentToFirestore() {
     final firestore = Firestore.instance;
     final enrollmentDetailsCollection = firestore
@@ -310,24 +238,25 @@ class _AddStudentPageState extends State<AddStudentPage> {
     });
   }
 
-  // void _saveEnrollmentToFirestore() {
-  //
-  //
-  //   final firestore = Firestore.instance;
-  //   final guardianDetailsCollection = firestore.collection('Enrollments');
-  //
-  //     guardianDetailsCollection.add({
-  //       'StartDate': _dateController.text,
-  //       'Class': _isReading ? "Reading" : (_isMath ? "Math" : "Other"),
-  //       'EndDate': "",
-  //       'CMSID': _studCMSIDController.text,
-  //     }).then((value) {
-  //       print('Enrollment saved to Firestore');
-  //     }).catchError((error) {
-  //       print('Failed to save guardian: $error');
-  //     });
-  //
-  // }
+  void _showSuccessMessage() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Student details saved successfully.'),
+        duration: Duration(seconds: 3),
+        backgroundColor: Color.fromARGB(255, 94, 29, 216),
+      ),
+    );
+  }
+
+  void _showErrorMessage() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Student details saved successfully.'),
+        duration: Duration(seconds: 3),
+        backgroundColor: Color.fromARGB(255, 202, 75, 17),
+      ),
+    );
+  }
 
   void _resetFields() {
     setState(() {
@@ -380,6 +309,13 @@ class _AddStudentPageState extends State<AddStudentPage> {
           'isActive': _isActive,
         });
 
+        SnackBar(
+          content: Text('Student details saved successfully.'),
+          duration: Duration(seconds: 3),
+          //backgroundColor: Color.fromARGB(255, 166, 216, 239),
+        );
+
+        _showSuccessMessage();
         _saveGuardiansToFirestore();
         _saveEnrollmentToFirestore();
 

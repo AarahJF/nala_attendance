@@ -10,6 +10,8 @@ import 'dart:io';
 import 'package:intl/intl.dart'; // Import the intl library
 import 'package:pdf/widgets.dart' show PdfColor;
 
+import 'Data_Structures/student_schedule.dart';
+
 class StudentCell {
   final String name;
   final String subject;
@@ -34,24 +36,6 @@ class Student {
   });
 }
 
-class StudSchedule {
-  final String name;
-  final String subject;
-  final String location;
-  final String startTime;
-  final String week;
-  final String day;
-
-  StudSchedule({
-    required this.startTime,
-    required this.location,
-    required this.name,
-    required this.subject,
-    required this.week,
-    required this.day,
-  });
-}
-
 List<String> dayOptions = [
   'Monday',
   'Tuesday',
@@ -63,6 +47,10 @@ List<String> dayOptions = [
 ];
 
 class ScheduleViewPage extends StatefulWidget {
+  final List<StudSchedule> studSchedule;
+
+  ScheduleViewPage({required this.studSchedule});
+
   @override
   State<ScheduleViewPage> createState() => _ScheduleViewPageState();
 }
@@ -71,7 +59,7 @@ class _ScheduleViewPageState extends State<ScheduleViewPage> {
   String selectedDay = '';
   String selectedWeek =
       ''; // Global variable to store the selected week details
-  List<StudSchedule> studSchedule = []; // List to store Regular Schedule
+
   List<Student> students = []; // List to store Regular Schedule
 
   String getFormattedCurrentWeek() {
@@ -85,35 +73,10 @@ class _ScheduleViewPageState extends State<ScheduleViewPage> {
     return "$formattedMonday - $formattedSunday";
   }
 
-  void getSchedule() async {
-    final firestore = Firestore.instance;
-    final studentCollection = firestore.collection('Schedule');
-
-    try {
-      final studentlist = await studentCollection.get();
-
-      studSchedule.clear(); // Clear the previous schedule data
-      for (final data in studentlist) {
-        final schedule = StudSchedule(
-            startTime: data['startTime'],
-            location: data['location'],
-            name: data['name'],
-            subject: data['subject'],
-            week: data['week'],
-            day: data['day']);
-        studSchedule.add(schedule);
-      }
-
-      print(studSchedule);
-    } catch (e) {
-      //print(e.toString());
-    }
-  }
-
   void getStudents() {
     try {
       students.clear(); // Clear the previous schedule data
-      for (final data in studSchedule) {
+      for (final data in widget.studSchedule) {
         if (data.week == selectedWeek && data.day == selectedDay) {
           final student = Student(
             startTime: data.startTime,
@@ -338,7 +301,6 @@ class _ScheduleViewPageState extends State<ScheduleViewPage> {
     // TODO: implement initState
     selectedDay = _getCurrentDay();
     selectedWeek = getFormattedCurrentWeek();
-    getSchedule(); // Fetch initial schedule data
     getStudents();
     super.initState();
   }
