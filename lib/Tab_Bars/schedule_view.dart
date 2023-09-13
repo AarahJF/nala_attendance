@@ -83,6 +83,23 @@ class _ScheduleViewState extends State<ScheduleView> {
     return '${duration != null ? duration!.inMinutes : 'N/A'}';
   }
 
+  String calculateEndTime(String startTime, int durationMinutes) {
+    // Define a date format to parse the input time string.
+    final timeFormat = DateFormat('hh:mm a');
+
+    // Parse the start time string into a DateTime object.
+    final startTimeDateTime = timeFormat.parse(startTime);
+
+    // Calculate the end time by adding the duration in minutes to the start time.
+    final endTimeDateTime =
+        startTimeDateTime.add(Duration(minutes: durationMinutes));
+
+    // Format the end time as a string in the desired format.
+    final endTimeString = timeFormat.format(endTimeDateTime);
+
+    return endTimeString;
+  }
+
   void _saveScheduleToFirestore() async {
     final firestore = Firestore.instance;
     final regScheduleDetailsCollection = firestore
@@ -134,7 +151,7 @@ class _ScheduleViewState extends State<ScheduleView> {
         'week': selectedWeek,
         'name': widget.name,
         'subject': subject,
-        'endTime': endTime,
+        'timediff': int.tryParse(regSchedule.timediff),
       }).then((value) {
         _showSuccessMessage();
         print('Regular Schedule saved to Firestore');
@@ -495,7 +512,7 @@ class _ScheduleViewState extends State<ScheduleView> {
               onPressed: () {
                 // Handle button click to add a row
                 setState(() {
-                  //_saveScheduleToFirestore();
+                  _saveScheduleToFirestore();
                   _saveMeToFirestore();
                 });
               },

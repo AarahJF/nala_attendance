@@ -10,6 +10,7 @@ import 'dart:io';
 import 'package:intl/intl.dart'; // Import the intl library
 import 'package:pdf/widgets.dart' show PdfColor;
 
+import 'Constants/listConstants.dart';
 import 'Data_Structures/student_schedule.dart';
 
 class StudentCell {
@@ -75,6 +76,7 @@ class _ScheduleViewPageState extends State<ScheduleViewPage> {
 
   void getStudents() {
     try {
+      //print(widget.studSchedule);
       students.clear(); // Clear the previous schedule data
       for (final data in widget.studSchedule) {
         if (data.week == selectedWeek && data.day == selectedDay) {
@@ -91,30 +93,6 @@ class _ScheduleViewPageState extends State<ScheduleViewPage> {
       //print(e.toString());
     }
   }
-
-  final List<String> locations = [
-    'Primary Instruction',
-    'Primary II',
-    'Early Learners',
-    'Early Learners 1st',
-    'Transition/Reserved',
-    'Transition/Reserved2',
-  ];
-
-  final List<String> times = [
-    '1:00 PM',
-    '1:30 PM',
-    '2:00 PM',
-    '2:30 PM',
-    '3:00 PM',
-    '3:30 PM',
-    '4:00 PM',
-    '4:30 PM',
-    '5:00 PM',
-    '5:30 PM',
-    '6:00 PM',
-    '6:30 PM'
-  ];
 
   Future<void> _generatePdf(BuildContext context) async {
     final pdf = pdfWidgets.Document();
@@ -233,8 +211,8 @@ class _ScheduleViewPageState extends State<ScheduleViewPage> {
 
         // Iterate through the StudSchedule objects for this location and time
         for (Student schedule in students) {
-          if (schedule.location == locations[i] &&
-              schedule.startTime == times[j]) {
+          if (schedule.location.trim() == locations[i].trim() &&
+              schedule.startTime.trim() == times[j].trim()) {
             studentsAtCell.add(
                 StudentCell(name: schedule.name, subject: schedule.subject));
           }
@@ -302,6 +280,7 @@ class _ScheduleViewPageState extends State<ScheduleViewPage> {
     selectedDay = _getCurrentDay();
     selectedWeek = getFormattedCurrentWeek();
     getStudents();
+
     super.initState();
   }
 

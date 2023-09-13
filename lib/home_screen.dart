@@ -8,21 +8,24 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:simple_barcode_scanner/simple_barcode_scanner.dart';
 
+import 'Constants/listConstants.dart';
 import 'Data_Structures/student_schedule.dart';
 
 class HomeScreen extends StatefulWidget {
   final List<StudSchedule> studSchedule;
+  String selectedDay;
+  String selectedWeek;
 
-  HomeScreen({required this.studSchedule});
+  HomeScreen(
+      {required this.studSchedule,
+      required this.selectedDay,
+      required this.selectedWeek});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String selectedDay = '';
-  String selectedWeek =
-      ''; // Global variable to store the selected week details
   String result = '';
   CollectionReference studentNames = Firestore.instance.collection('Students');
   int greenCountM = 0;
@@ -32,33 +35,17 @@ class _HomeScreenState extends State<HomeScreen> {
   int yellowCountR = 0;
   int redCountR = 0;
 
+  bool studschedExist = false;
+
   List<DisplayStudent> mathStudents = [];
   List<DisplayStudent> readStudents = [];
   List<StudentRecord> studentRecords = [];
-
-  String _getCurrentDay() {
-    DateTime now = DateTime.now();
-    return DateFormat('EEEE')
-        .format(now); // Format the current date to get the day
-  }
-
-  String getFormattedCurrentWeek() {
-    DateTime now = DateTime.now();
-    DateTime monday = now.subtract(Duration(days: now.weekday - 1));
-    DateTime sunday = monday.add(Duration(days: 6));
-
-    String formattedMonday = DateFormat('yyyy / MM / dd').format(monday);
-    String formattedSunday = DateFormat('yyyy / MM / dd').format(sunday);
-
-    return "$formattedMonday - $formattedSunday";
-  }
 
   @override
   void initState() {
     super.initState();
     // TODO: implement initState
-    selectedDay = _getCurrentDay();
-    selectedWeek = getFormattedCurrentWeek();
+
     restoreDataFromCsv();
   }
 
@@ -77,8 +64,8 @@ class _HomeScreenState extends State<HomeScreen> {
     studentsRef.add({
       'dTimeIn': inTime,
       'dTimeOut': outTime,
-      'Week': selectedWeek,
-      'Day': selectedDay,
+      'Week': widget.selectedWeek,
+      'Day': widget.selectedDay,
     }).then((value) {
       print('Enrollment saved to Firestore');
     }).catchError((error) {
@@ -481,30 +468,133 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  Future<int> getTimeRemianing(String id) async {
-    final firestore = Firestore.instance;
-    final regularDetailsCollection = firestore
-        .collection('Students')
-        .document(id)
-        .collection("Regular Schedule");
-    int time;
-    print("came here");
+  String getCurrentTimeFormatted() {
+    // Get the current time
+    DateTime now = DateTime.now();
 
-    try {
-      final studentlist = await regularDetailsCollection.get();
+    // Format the time as "3:00 PM"
+    String formattedTime = DateFormat('h:mm a').format(now);
 
-      print(studentlist);
-      for (final data in studentlist) {
-        time = int.parse(data['duration']);
-        print(time);
-        return time;
+    return formattedTime;
+  }
+
+  String getAssignedStartTime(String currentTime) {
+    // Format the current time in 'h:mm a' format
+    DateTime currentDateTime = DateFormat('h:mm a').parse(currentTime);
+
+    // Iterate through the list of times to find the closest start time
+    String assignedStartTime = times.first;
+    DateTime assignedTime = DateFormat('h:mm a').parse(assignedStartTime);
+
+    for (int i = 1; i < times.length; i++) {
+      DateTime nextTime = DateFormat('h:mm a').parse(times[i]);
+
+      // Check if the current time is between two time slots
+      if (currentDateTime.isAfter(assignedTime) &&
+          currentDateTime.isBefore(nextTime)) {
+        break; // Found the assigned start time
       }
-    } catch (e) {
-      print(e.toString());
+
+      // Update the assigned time for the next iteration
+      assignedStartTime = times[i];
+      assignedTime = nextTime;
     }
 
-    return 45;
+    return assignedStartTime;
   }
+
+  int getTimeRemianing(String id) {
+    for (final data in widget.studSchedule) {
+      if (data.week == widget.selectedWeek && data.day == widget.selectedDay) {
+        studschedExist = true;
+        if (data.startTime == getAssignedStartTime(getCurrentTimeFormatted())) {
+          return data.timediff;
+        }
+      }
+    }
+
+    return showDialogAndGetTimeDuration();
+  }
+
+  int showDialogAndGetTimeDuration() {
+    // Use a TextEditingController to get user inputs
+    TextEditingController startTimeController = TextEditingController();
+    TextEditingController timeDurationController = TextEditingController();
+
+    // Show a dialog to get new start time and time duration from the user
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Enter New Schedule Details'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              TextField(
+                controller: startTimeController,
+                decoration: InputDecoration(labelText: 'New Start Time'),
+              ),
+              TextField(
+                controller: timeDurationController,
+                decoration:
+                    InputDecoration(labelText: 'Time Duration (in minutes)'),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            ElevatedButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+            ),
+            ElevatedButton(
+              child: Text('Save'),
+              onPressed: () {
+                String newStartTime = startTimeController.text;
+                int newTimeDuration =
+                    int.tryParse(timeDurationController.text) ?? 0;
+
+                // Save the details to the database if needed
+                // ...
+
+                Navigator.of(context).pop(
+                    newTimeDuration); // Return the time duration to the caller
+              },
+            ),
+          ],
+        );
+      },
+    );
+
+    // Return the time duration entered by the user
+    return int.tryParse(timeDurationController.text) ??
+        30; // Default to 30 if user input is invalid
+  }
+
+  // Future<int> getTimeRemianing(String id) async {
+  //   final firestore = Firestore.instance;
+  //   final regularDetailsCollection = firestore
+  //       .collection('Students')
+  //       .document(id)
+  //       .collection("Regular Schedule");
+  //   int time;
+
+  //   try {
+  //     final studentlist = await regularDetailsCollection.get();
+
+  //     print(studentlist);
+  //     for (final data in studentlist) {
+  //       time = int.parse(data['duration']);
+  //       print(time);
+  //       return time;
+  //     }
+  //   } catch (e) {
+  //     print(e.toString());
+  //   }
+
+  //   return 45;
+  // }
 }
 
 class DisplayStudent {

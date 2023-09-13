@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart'
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:collection/collection.dart';
+import 'package:intl/intl.dart';
 import 'package:nala_attendance/home_screen.dart';
 import 'package:nala_attendance/qr_gen.dart';
 import 'Data_Structures/student_schedule.dart';
@@ -32,7 +33,28 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   int myIndex = 0;
-  List<StudSchedule> studSchedule = []; // List to store Regular Schedule
+  String selectedDay = '';
+  String selectedWeek = '';
+  List<StudSchedule> scheduleList = []; // List to store Regular Schedule
+
+  bool isLoading = true; // Add a flag to track loading
+
+  String _getCurrentDay() {
+    DateTime now = DateTime.now();
+    return DateFormat('EEEE')
+        .format(now); // Format the current date to get the day
+  }
+
+  String getFormattedCurrentWeek() {
+    DateTime now = DateTime.now();
+    DateTime monday = now.subtract(Duration(days: now.weekday - 1));
+    DateTime sunday = monday.add(Duration(days: 6));
+
+    String formattedMonday = DateFormat('yyyy / MM / dd').format(monday);
+    String formattedSunday = DateFormat('yyyy / MM / dd').format(sunday);
+
+    return "$formattedMonday - $formattedSunday";
+  }
 
   void getSchedule() async {
     final firestore = Firestore.instance;
@@ -41,29 +63,41 @@ class _MyAppState extends State<MyApp> {
     try {
       final studentlist = await studentCollection.get();
 
-      studSchedule.clear(); // Clear the previous schedule data
+      scheduleList.clear(); // Clear the previous schedule data
       for (final data in studentlist) {
+        //print(data);
+
         final schedule = StudSchedule(
             startTime: data['startTime'],
             location: data['location'],
             name: data['name'],
             subject: data['subject'],
             week: data['week'],
-            day: data['day']);
-        studSchedule.add(schedule);
-      }
+            day: data['day'],
+            timediff: data['timediff']);
 
-      print(studSchedule);
+        scheduleList.add(schedule);
+      }
+      // Set isLoading to false once data is loaded
+      setState(() {
+        isLoading = false;
+      });
     } catch (e) {
-      //print(e.toString());
+      // Handle errors here
+      // Set isLoading to false even in case of error
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
   @override
   void initState() {
     // TODO: implement initState
-
+    selectedDay = _getCurrentDay();
+    selectedWeek = getFormattedCurrentWeek();
     getSchedule();
+
     super.initState();
   }
 
@@ -73,7 +107,9 @@ class _MyAppState extends State<MyApp> {
     switch (myIndex) {
       case 0:
         return HomeScreen(
-          studSchedule: studSchedule,
+          studSchedule: scheduleList,
+          selectedDay: selectedDay,
+          selectedWeek: selectedWeek,
         );
         break;
       case 1:
@@ -95,7 +131,7 @@ class _MyAppState extends State<MyApp> {
       case 4:
         return Container(
           child: ScheduleViewPage(
-            studSchedule: studSchedule,
+            studSchedule: scheduleList,
           ),
         );
         break;
@@ -112,8 +148,10 @@ class _MyAppState extends State<MyApp> {
       title: 'TCA - The Center Administrator',
       theme: ThemeData.light(),
       home: Scaffold(
-        //appBar: CustomAppBar(),
-        body: bodyFunction(),
+        body: isLoading
+            ? Center(
+                child: CircularProgressIndicator()) // Show loading indicator
+            : bodyFunction(), // Show data or other widgets once loading is done
         bottomNavigationBar: CurvedNavigationBar(
           key: _bottomNavigationKey,
           index: 0,
