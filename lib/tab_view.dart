@@ -82,8 +82,6 @@ class _TabbedContainerState extends State<TabbedContainer>
         .document(widget.CMSID)
         .collection("Regular Schedule");
 
-    print("came here");
-
     try {
       final studentlist = await regularDetailsCollection.get();
 
