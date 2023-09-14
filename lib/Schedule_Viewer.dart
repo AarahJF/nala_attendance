@@ -61,7 +61,78 @@ class _ScheduleViewPageState extends State<ScheduleViewPage> {
   String selectedWeek =
       ''; // Global variable to store the selected week details
 
+  bool isLoading = true; // Add a flag to track loading
+
   List<Student> students = []; // List to store Regular Schedule
+
+  Future<void> getSchedule() async {
+    final firestore = Firestore.instance;
+    final studentCollection = firestore.collection('Schedule');
+
+    try {
+      final studentlist = await studentCollection.get();
+
+      widget.studSchedule.clear(); // Clear the previous schedule data
+      for (final data in studentlist) {
+        //print(data);
+
+        final schedule = StudSchedule(
+            startTime: data['startTime'],
+            location: data['location'],
+            name: data['name'],
+            subject: data['subject'],
+            week: data['week'],
+            day: data['day'],
+            timediff: data['timediff'],
+            cmsID: data['cmsID']);
+
+        widget.studSchedule.add(schedule);
+      }
+      // Return a completed future to indicate that data retrieval is complete
+      return Future.value();
+    } catch (e) {
+      // Handle errors here
+      // Throw an exception to indicate that an error occurred
+      throw e;
+    }
+  }
+
+  // void getSchedule() async {
+  //   final firestore = Firestore.instance;
+  //   final studentCollection = firestore.collection('Schedule');
+
+  //   try {
+  //     final studentlist = await studentCollection.get();
+
+  //     widget.studSchedule.clear(); // Clear the previous schedule data
+  //     for (final data in studentlist) {
+  //       //print(data);
+
+  //       final schedule = StudSchedule(
+  //           startTime: data['startTime'],
+  //           location: data['location'],
+  //           name: data['name'],
+  //           subject: data['subject'],
+  //           week: data['week'],
+  //           day: data['day'],
+  //           timediff: data['timediff'],
+  //           cmsID: data['cmsID']);
+
+  //       widget.studSchedule.add(schedule);
+  //     }
+  //     // Set isLoading to false once data is loaded
+  //     setState(() {
+  //       isLoading = false;
+  //       getStudents();
+  //     });
+  //   } catch (e) {
+  //     // Handle errors here
+  //     // Set isLoading to false even in case of error
+  //     setState(() {
+  //       isLoading = false;
+  //     });
+  //   }
+  // }
 
   String getFormattedCurrentWeek() {
     DateTime now = DateTime.now();
@@ -279,7 +350,7 @@ class _ScheduleViewPageState extends State<ScheduleViewPage> {
     // TODO: implement initState
     selectedDay = _getCurrentDay();
     selectedWeek = getFormattedCurrentWeek();
-    getStudents();
+    getSchedule();
 
     super.initState();
   }
@@ -359,71 +430,155 @@ class _ScheduleViewPageState extends State<ScheduleViewPage> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: SingleChildScrollView(
-          scrollDirection: Axis.vertical,
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Table(
-              defaultColumnWidth: IntrinsicColumnWidth(),
-              border: TableBorder.all(),
-              children: [
-                TableRow(
-                  children: [
-                    TableCell(child: SizedBox(width: 100)),
-                    for (String time in times)
-                      TableCell(
-                        child: Container(
-                          padding: EdgeInsets.all(8.0),
-                          color: Colors.blue,
-                          child: Text(
-                            time,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-                for (int i = 0; i < locations.length; i++)
-                  TableRow(
+      body: FutureBuilder<void>(
+        future: getSchedule(),
+        builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            // Show a CircularProgressIndicator while loading data
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          } else if (snapshot.hasError) {
+            // Handle the error case
+            return Center(
+              child: Text("Error: ${snapshot.error}"),
+            );
+          } else {
+            // Data has been loaded, show the table
+            return SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Table(
+                    defaultColumnWidth: IntrinsicColumnWidth(),
+                    border: TableBorder.all(),
                     children: [
-                      TableCell(
-                        child: Container(
-                          padding: EdgeInsets.all(8.0),
-                          color: Colors.blue,
-                          child: Text(
-                            locations[i],
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
+                      TableRow(
+                        children: [
+                          TableCell(child: SizedBox(width: 100)),
+                          for (String time in times)
+                            TableCell(
+                              child: Container(
+                                padding: EdgeInsets.all(8.0),
+                                color: Colors.blue,
+                                child: Text(
+                                  time,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
+                        ],
                       ),
-                      for (int j = 0; j < times.length; j++)
-                        TableCell(
-                          child: Container(
-                            padding: EdgeInsets.all(8.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(_getTableData()[i]
-                                    [j]), // Use the updated tableData here
-                              ],
+                      for (int i = 0; i < locations.length; i++)
+                        TableRow(
+                          children: [
+                            TableCell(
+                              child: Container(
+                                padding: EdgeInsets.all(8.0),
+                                color: Colors.blue,
+                                child: Text(
+                                  locations[i],
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
+                            for (int j = 0; j < times.length; j++)
+                              TableCell(
+                                child: Container(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(_getTableData()[i][
+                                          j]), // Use the updated tableData here
+                                    ],
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
                     ],
                   ),
-              ],
-            ),
-          ),
-        ),
+                ),
+              ),
+            );
+          }
+        },
       ),
+      // body: SingleChildScrollView(
+      //   scrollDirection: Axis.horizontal,
+      //   child: SingleChildScrollView(
+      //     scrollDirection: Axis.vertical,
+      //     child: Padding(
+      //       padding: const EdgeInsets.all(20.0),
+      //       child: Table(
+      //         defaultColumnWidth: IntrinsicColumnWidth(),
+      //         border: TableBorder.all(),
+      //         children: [
+      //           TableRow(
+      //             children: [
+      //               TableCell(child: SizedBox(width: 100)),
+      //               for (String time in times)
+      //                 TableCell(
+      //                   child: Container(
+      //                     padding: EdgeInsets.all(8.0),
+      //                     color: Colors.blue,
+      //                     child: Text(
+      //                       time,
+      //                       style: TextStyle(
+      //                         color: Colors.white,
+      //                         fontWeight: FontWeight.bold,
+      //                       ),
+      //                     ),
+      //                   ),
+      //                 ),
+      //             ],
+      //           ),
+      //           for (int i = 0; i < locations.length; i++)
+      //             TableRow(
+      //               children: [
+      //                 TableCell(
+      //                   child: Container(
+      //                     padding: EdgeInsets.all(8.0),
+      //                     color: Colors.blue,
+      //                     child: Text(
+      //                       locations[i],
+      //                       style: TextStyle(
+      //                         color: Colors.white,
+      //                         fontWeight: FontWeight.bold,
+      //                       ),
+      //                     ),
+      //                   ),
+      //                 ),
+      //                 for (int j = 0; j < times.length; j++)
+      //                   TableCell(
+      //                     child: Container(
+      //                       padding: EdgeInsets.all(8.0),
+      //                       child: Column(
+      //                         crossAxisAlignment: CrossAxisAlignment.start,
+      //                         children: [
+      //                           Text(_getTableData()[i]
+      //                               [j]), // Use the updated tableData here
+      //                         ],
+      //                       ),
+      //                     ),
+      //                   ),
+      //               ],
+      //             ),
+      //         ],
+      //       ),
+      //     ),
+      //   ),
+      // ),
     );
   }
 }

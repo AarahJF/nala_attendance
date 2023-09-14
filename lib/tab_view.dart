@@ -7,6 +7,7 @@ import 'package:nala_attendance/schedule.dart';
 import 'package:intl/intl.dart';
 import 'package:nala_attendance/week_picker.dart';
 import 'Attendance.dart';
+import 'Data_Structures/student_schedule.dart';
 import 'Tab_Bars/attendance_view.dart';
 import 'Tab_Bars/default_view.dart';
 import 'Tab_Bars/enrolment_view.dart';
@@ -16,13 +17,14 @@ import 'package:table_calendar/table_calendar.dart';
 
 class TabbedContainer extends StatefulWidget {
   final List<Guardian> guardians;
+  final List<StudSchedule> studSchedule;
   final bool isReading;
   final bool isDoingMath;
   final String CMSID;
   final String name;
 
-  TabbedContainer(
-      this.guardians, this.isReading, this.isDoingMath, this.CMSID, this.name);
+  TabbedContainer(this.guardians, this.studSchedule, this.isReading,
+      this.isDoingMath, this.CMSID, this.name);
 
   @override
   _TabbedContainerState createState() => _TabbedContainerState();

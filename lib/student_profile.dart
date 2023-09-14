@@ -5,10 +5,14 @@ import 'package:nala_attendance/guardian.dart';
 import 'package:nala_attendance/student.dart';
 import 'package:nala_attendance/tab_view.dart';
 
+import 'Data_Structures/student_schedule.dart';
+
 class StudentDetailsPopup extends StatefulWidget {
   final Student student;
+  final List<StudSchedule> studSchedule;
 
-  const StudentDetailsPopup({required this.student});
+  const StudentDetailsPopup(
+      {required this.student, required this.studSchedule});
 
   @override
   State<StudentDetailsPopup> createState() => _StudentDetailsPopupState();
@@ -424,6 +428,7 @@ class _StudentDetailsPopupState extends State<StudentDetailsPopup> {
                           // Wrap TabbedContainer with Expanded
                           child: TabbedContainer(
                               guardians,
+                              widget.studSchedule,
                               widget.student.isReading,
                               widget.student.isDoingMath,
                               widget.student.studentId,

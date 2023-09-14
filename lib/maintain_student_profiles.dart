@@ -5,8 +5,13 @@ import 'package:firedart/firedart.dart';
 import 'package:nala_attendance/student.dart';
 import 'package:nala_attendance/student_profile.dart';
 
+import 'Data_Structures/student_schedule.dart';
+
 class MaintainStudentProfile extends StatefulWidget {
-  const MaintainStudentProfile({Key? key}) : super(key: key);
+  final List<StudSchedule> studSchedule;
+  MaintainStudentProfile({
+    required this.studSchedule,
+  });
 
   @override
   State<MaintainStudentProfile> createState() => _MaintainStudentProfileState();
@@ -212,6 +217,7 @@ class _MaintainStudentProfileState extends State<MaintainStudentProfile> {
                                         height: 7000,
                                         child: StudentDetailsPopup(
                                           student: filteredStudents[index],
+                                          studSchedule: widget.studSchedule,
                                         ),
                                       );
                                     },

@@ -74,7 +74,8 @@ class _MyAppState extends State<MyApp> {
             subject: data['subject'],
             week: data['week'],
             day: data['day'],
-            timediff: data['timediff']);
+            timediff: data['timediff'],
+            cmsID: data['cmsID']);
 
         scheduleList.add(schedule);
       }
@@ -114,7 +115,9 @@ class _MyAppState extends State<MyApp> {
         break;
       case 1:
         return Container(
-          child: MaintainStudentProfile(),
+          child: MaintainStudentProfile(
+            studSchedule: scheduleList,
+          ),
         );
         break;
       case 2:

@@ -21,3 +21,13 @@ final List<String> times = [
   '6:00 PM',
   '6:30 PM'
 ];
+
+List<String> dayOptions = [
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+  'Sunday',
+];

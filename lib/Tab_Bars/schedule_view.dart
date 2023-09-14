@@ -4,6 +4,7 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:intl/intl.dart';
 
+import '../Constants/listConstants.dart' as co;
 import '../duration.dart';
 import '../schedule.dart';
 import '../week_picker.dart';
@@ -55,15 +56,7 @@ class _ScheduleViewState extends State<ScheduleView> {
 
   String selectedWeek =
       ''; // Global variable to store the selected week details
-  List<String> dayOptions = [
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
-    'Sunday',
-  ];
+
   var startTime;
   var endTime;
 
@@ -105,9 +98,7 @@ class _ScheduleViewState extends State<ScheduleView> {
     final regScheduleDetailsCollection = firestore
         .collection('Students')
         .document(widget.CMSID)
-        .collection("Regular Schedule")
-        .document(selectedWeek.replaceAll('/', ','))
-        .collection("main");
+        .collection("Regular Schedule");
 
     // Delete the existing "Regular Schedule" collection
     await regScheduleDetailsCollection.get().then((snapshot) {
@@ -127,6 +118,7 @@ class _ScheduleViewState extends State<ScheduleView> {
         'endTime': regSchedule.endTime,
         'location': regSchedule.location,
         'duration': regSchedule.timediff,
+        'week': selectedWeek,
       }).then((value) {
         _showSuccessMessage();
         print('Regular Schedule saved to Firestore');
@@ -204,6 +196,7 @@ class _ScheduleViewState extends State<ScheduleView> {
               ),
             ),
             Table(
+              defaultColumnWidth: IntrinsicColumnWidth(),
               border: TableBorder.all(
                 color: Colors.blue,
                 width: 1.0,
@@ -305,7 +298,7 @@ class _ScheduleViewState extends State<ScheduleView> {
                           child: DropdownButtonHideUnderline(
                             child: DropdownButton<String>(
                               value: widget.regularSchedule[index].day,
-                              items: dayOptions.map((String value) {
+                              items: co.dayOptions.map((String value) {
                                 return DropdownMenuItem<String>(
                                   value: value,
                                   child: Text(value),
@@ -435,18 +428,27 @@ class _ScheduleViewState extends State<ScheduleView> {
                         ),
                       ),
                       TableCell(
+                        verticalAlignment: TableCellVerticalAlignment.middle,
                         child: Padding(
                           padding: const EdgeInsets.only(left: 8),
-                          child: TextFormField(
-                            initialValue:
-                                widget.regularSchedule[index].location,
-                            onChanged: (value) {
-                              setState(() {
-                                widget.regularSchedule[index].location = value;
-                              });
-                            },
-                            decoration: InputDecoration(
-                              border: InputBorder.none,
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: widget.regularSchedule[index].location,
+                              items: co.locations
+                                  .toSet()
+                                  .toList()
+                                  .map((String value) {
+                                return DropdownMenuItem<String>(
+                                  value: value,
+                                  child: Text(value),
+                                );
+                              }).toList(),
+                              onChanged: (String? newValue) {
+                                setState(() {
+                                  widget.regularSchedule[index].location =
+                                      newValue!;
+                                });
+                              },
                             ),
                           ),
                         ),
@@ -496,7 +498,7 @@ class _ScheduleViewState extends State<ScheduleView> {
                       day: 'Monday',
                       startTime: 'New Start Time',
                       endTime: 'New End Time',
-                      location: 'New Location',
+                      location: co.locations[0],
                       timediff: 'N/A',
                     ),
                   );
