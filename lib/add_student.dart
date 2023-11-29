@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:excel/excel.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firedart/firedart.dart';
 import 'package:flutter/foundation.dart';
@@ -42,6 +43,51 @@ class _AddStudentPageState extends State<AddStudentPage> {
   String? readingValue; // Updated to null
   String? mathValue; // Updated to null
   String _data = '';
+
+  List<List<String>> excelData = [];
+
+  Future<void> _pickAndReadExcel() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['xls', 'xlsx'],
+    );
+
+    if (result != null) {
+      PlatformFile file = result.files.first;
+      print('Selected File: ${file.name}');
+
+      if (file.extension == 'xls' || file.extension == 'xlsx') {
+        print('Valid file selected');
+
+        var bytes = file.bytes!;
+        var excel = Excel.decodeBytes(bytes);
+
+        for (var table in excel.tables.keys) {
+          print('Table: $table'); //sheet Name
+          print('Max Columns: ${excel.tables[table]!.maxColumns}');
+          print('Max Rows: ${excel.tables[table]!.maxRows}');
+
+          for (var row in excel.tables[table]!.rows) {
+            // Handle null or empty values in the cells
+            List<String> rowData = row.map((e) => e?.toString() ?? '').toList();
+
+            // Do something with the Excel data
+            print('Row Data: $rowData');
+            excelData.add(rowData);
+          }
+        }
+
+        // You can now use the 'excelData' list in your code
+        print('Excel Data: $excelData');
+      } else {
+        // Handle invalid file type or null bytes
+        print('Invalid file type or null bytes. Please choose an Excel file.');
+      }
+    } else {
+      // User canceled the file picker
+      print('File picking canceled.');
+    }
+  }
 
   void _generateQRCode() {
     final text = _studCMSIDController.text;
@@ -703,6 +749,17 @@ class _AddStudentPageState extends State<AddStudentPage> {
                       child: Text('Reset'),
                     ),
                   ],
+                ),
+
+                SizedBox(height: 20.0),
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton(
+                      onPressed: _pickAndReadExcel,
+                      child: const Text('Add excel file details'),
+                    ),
+                  ),
                 ),
               ],
             ),

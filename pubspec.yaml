@@ -50,7 +50,7 @@ dependencies:
   webview_win_floating: ^2.0.0
   qr_image_generator: ^0.2.8
   flutter_riverpod: ^2.3.6
-  excel: ^2.1.0
+  excel: ^3.0.0
   csv: ^5.0.2
   table_calendar: ^3.0.9
   pdf: ^3.10.1
