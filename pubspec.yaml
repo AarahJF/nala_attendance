@@ -55,6 +55,7 @@ dependencies:
   table_calendar: ^3.0.9
   pdf: ^3.10.1
   flutter_datetime_picker: ^1.5.1
+  file: ^6.1.4
 
 
 

@@ -10,6 +10,7 @@ import 'package:simple_barcode_scanner/simple_barcode_scanner.dart';
 
 import 'Constants/listConstants.dart';
 import 'Data_Structures/student_schedule.dart';
+import 'Utility/csv_helper.dart';
 
 class HomeScreen extends StatefulWidget {
   final List<StudSchedule> studSchedule;
@@ -71,6 +72,24 @@ class _HomeScreenState extends State<HomeScreen> {
     }).catchError((error) {
       print('Failed to save guardian: $error');
     });
+  }
+
+  Future<void> saveAttendanceToCsv(String id, String inTime, String outTime,
+      {String filename = 'Attendance_data.csv'}) async {
+    // Read existing CSV data
+    List<List<dynamic>> existingCsvData = await CsvHelper.readCsv(filename);
+
+    // Add new data
+    existingCsvData.add([
+      id,
+      inTime,
+      outTime,
+      widget.selectedWeek,
+      widget.selectedDay,
+    ]);
+
+    // Write updated CSV data
+    await CsvHelper.writeCsv(existingCsvData, filename);
   }
 
   Future<void> restoreDataFromCsv() async {
@@ -778,23 +797,6 @@ class ColorBox extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-class CsvHelper {
-  static Future<List<List<dynamic>>> readCsv(String s) async {
-    final file = File(s);
-    if (await file.exists()) {
-      final csvContent = await file.readAsString();
-      return CsvToListConverter().convert(csvContent);
-    }
-    return [];
-  }
-
-  static Future<void> writeCsv(List<List<dynamic>> csvData, String s) async {
-    final file = File(s);
-    final csvContent = const ListToCsvConverter().convert(csvData);
-    await file.writeAsString(csvContent);
   }
 }
 

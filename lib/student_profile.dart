@@ -1,6 +1,7 @@
 import 'package:firedart/firestore/firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:nala_attendance/Data_Structures/student_detail.dart';
 import 'package:nala_attendance/guardian.dart';
 import 'package:nala_attendance/student.dart';
 import 'package:nala_attendance/tab_view.dart';
@@ -10,9 +11,12 @@ import 'Data_Structures/student_schedule.dart';
 class StudentDetailsPopup extends StatefulWidget {
   final Student student;
   final List<StudSchedule> studSchedule;
+  final List<StudentDetail> dataDetails;
 
   const StudentDetailsPopup(
-      {required this.student, required this.studSchedule});
+      {required this.student,
+      required this.studSchedule,
+      required this.dataDetails});
 
   @override
   State<StudentDetailsPopup> createState() => _StudentDetailsPopupState();
@@ -39,36 +43,71 @@ class _StudentDetailsPopupState extends State<StudentDetailsPopup> {
   String? dadPhone;
 
   void getStudents(String cmsStudentId) async {
-    final firestore = Firestore.instance;
-    final guardianDetailsCollection = firestore
-        .collection('Students')
-        .document(cmsStudentId)
-        .collection("Guardian");
-
-    try {
-      final studentlist = await guardianDetailsCollection.get();
-
-      for (final data in studentlist) {
+    for (final data in widget.dataDetails) {
+      if (data.studentID == cmsStudentId) {
         setState(() {
-          final guardian = Guardian(
-            relation: data['relationType'],
-            firstName: data['firstName'],
-            lastName: data['lastName'],
-            email: data['email'],
-            phone: data['phoneNumber'],
+          final mom = Guardian(
+            relation: "Mother",
+            firstName: data.motherFirstName,
+            lastName: data.lastName,
+            email: data.motherEmail,
+            phone: data.motherHPPhone,
           );
 
-          setState(() {
-            guardians.add(guardian);
-          });
+          final father = Guardian(
+            relation: "Father",
+            firstName: data.fatherFirstName,
+            lastName: data.fatherLastName,
+            email: data.fatherEmail,
+            phone: data.fatherHPPhone,
+          );
 
-          //print(guardians);
+          final guardian = Guardian(
+            relation: "Guardian",
+            firstName: data.guardianFirstName,
+            lastName: data.guardianLastName,
+            email: data.guardianEmail,
+            phone: data.guardianHPPhone,
+          );
+
+          guardians.add(mom);
+          guardians.add(father);
+          guardians.add(guardian);
         });
       }
-    } catch (e) {
-      print(e.toString());
     }
   }
+  // void getStudents(String cmsStudentId) async {
+  //   final firestore = Firestore.instance;
+  //   final guardianDetailsCollection = firestore
+  //       .collection('Students')
+  //       .document(cmsStudentId)
+  //       .collection("Guardian");
+
+  //   try {
+  //     final studentlist = await guardianDetailsCollection.get();
+
+  //     for (final data in studentlist) {
+  //       setState(() {
+  //         final guardian = Guardian(
+  //           relation: data['relationType'],
+  //           firstName: data['firstName'],
+  //           lastName: data['lastName'],
+  //           email: data['email'],
+  //           phone: data['phoneNumber'],
+  //         );
+
+  //         setState(() {
+  //           guardians.add(guardian);
+  //         });
+
+  //         //print(guardians);
+  //       });
+  //     }
+  //   } catch (e) {
+  //     print(e.toString());
+  //   }
+  // }
 
   @override
   void initState() {

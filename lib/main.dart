@@ -13,6 +13,7 @@ import 'package:nala_attendance/home_screen.dart';
 import 'package:nala_attendance/qr_gen.dart';
 import 'Data_Structures/student_schedule.dart';
 import 'Schedule_Viewer.dart';
+import 'Utility/csv_helper.dart';
 import 'add_student.dart';
 import 'custom_app_bar.dart';
 import 'maintain_student_profiles.dart';
@@ -56,48 +57,68 @@ class _MyAppState extends State<MyApp> {
     return "$formattedMonday - $formattedSunday";
   }
 
-  void getSchedule() async {
-    final firestore = Firestore.instance;
-    final studentCollection = firestore.collection('Schedule');
+  Future<void> getScheduleFromCSV() async {
+    final csvData = await CsvHelper.readCsv('schedule_data.csv');
+    for (final data in csvData) {
+      final schedule = StudSchedule(
+          startTime: data[0],
+          location: data[1],
+          name: data[2],
+          subject: data[3],
+          week: data[4],
+          day: data[5],
+          timediff: data[6],
+          cmsID: data[7]);
 
-    try {
-      final studentlist = await studentCollection.get();
-
-      scheduleList.clear(); // Clear the previous schedule data
-      for (final data in studentlist) {
-        //print(data);
-
-        final schedule = StudSchedule(
-            startTime: data['startTime'],
-            location: data['location'],
-            name: data['name'],
-            subject: data['subject'],
-            week: data['week'],
-            day: data['day'],
-            timediff: data['timediff'],
-            cmsID: data['cmsID']);
-
-        scheduleList.add(schedule);
-      }
-      // Set isLoading to false once data is loaded
-      setState(() {
-        isLoading = false;
-      });
-    } catch (e) {
-      // Handle errors here
-      // Set isLoading to false even in case of error
-      setState(() {
-        isLoading = false;
-      });
+      scheduleList.add(schedule);
     }
+    setState(() {
+      isLoading = false;
+    });
   }
+
+  // void getSchedule() async {
+  //   final firestore = Firestore.instance;
+  //   final studentCollection = firestore.collection('Schedule');
+
+  //   try {
+  //     final studentlist = await studentCollection.get();
+
+  //     scheduleList.clear(); // Clear the previous schedule data
+  //     for (final data in studentlist) {
+  //       //print(data);
+
+  //       final schedule = StudSchedule(
+  //           startTime: data['startTime'],
+  //           location: data['location'],
+  //           name: data['name'],
+  //           subject: data['subject'],
+  //           week: data['week'],
+  //           day: data['day'],
+  //           timediff: data['timediff'],
+  //           cmsID: data['cmsID']);
+
+  //       scheduleList.add(schedule);
+  //     }
+  //     // Set isLoading to false once data is loaded
+  //     setState(() {
+  //       isLoading = false;
+  //     });
+  //   } catch (e) {
+  //     // Handle errors here
+  //     // Set isLoading to false even in case of error
+  //     setState(() {
+  //       isLoading = false;
+  //     });
+  //   }
+  // }
 
   @override
   void initState() {
     // TODO: implement initState
     selectedDay = _getCurrentDay();
     selectedWeek = getFormattedCurrentWeek();
-    getSchedule();
+    getScheduleFromCSV();
 
     super.initState();
   }
